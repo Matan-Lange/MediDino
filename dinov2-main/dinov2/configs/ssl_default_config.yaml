@@ -61,7 +61,7 @@ ibot:
   head_hidden_dim: 2048
 train:
   batch_size_per_gpu: 256 # 256 for vit_s, 32 for vit_g
-  dataset_path: CustomImageDataset:split=TRAIN:root=/lustre/groups/labs/marr/qscd01/datasets/NCT-CRC-HE-100K:extra=/home/aih/benedikt.roth/scripts/bild_pfade.csv #to change to your own dataset
+  dataset_path: CustomImageDataset:split=TRAIN:root=/lustre/groups/labs/marr/qscd01/datasets/NCT-CRC-HE-100K #to change to your own dataset
   output_dir: . # change to something reasonable
   saveckp_freq: 20
   seed: 0
