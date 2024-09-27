@@ -1,7 +1,7 @@
 import torch
 from torch.utils.data import DataLoader
 from torch import nn, optim
-import mlflow
+import wandb
 from torchmetrics.classification import BinaryPrecision, BinaryRecall
 
 
@@ -55,7 +55,7 @@ class Trainer:
             total_loss += loss.item()
 
         avg_loss = total_loss / len(self.train_loader)
-        mlflow.log_metric('epoch_train_loss', avg_loss, step=epoch + 1)
+        wandb.log({'epoch_train_loss': avg_loss}, step=epoch + 1)
         print(f'Epoch {epoch + 1}, Loss: {avg_loss}')
 
     def validate_step(self, epoch):
@@ -78,9 +78,7 @@ class Trainer:
         avg_precision = precision / len(self.val_loader)
         avg_recall = recall / len(self.val_loader)
 
-        mlflow.log_metric('epoch_val_loss', avg_loss, step=epoch + 1)
-        mlflow.log_metric('precision', avg_precision, step=epoch + 1)
-        mlflow.log_metric('recall', avg_recall, step=epoch + 1)
+        wandb.log({'epoch_val_loss': avg_loss, 'precision': avg_precision, 'recall': avg_recall}, step=epoch + 1)
 
         print(f'Validation loss: {avg_loss}')
         return avg_loss

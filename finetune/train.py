@@ -1,4 +1,4 @@
-import mlflow
+import wandb
 import os
 import argparse
 import torch
@@ -44,61 +44,58 @@ def get_transforms():
     return train_transforms, val_transforms
 
 
-if __name__ == "main":
-    MLFLOW_TRACKING_URI = "sqlite:///mlflow.db"
-    mlflow.set_tracking_uri(MLFLOW_TRACKING_URI)
-
+if __name__ == "__main__":
     params = parse_parameters()
-    base_path = f'/content/MedDino/data/{params.dataset}/'
-    csv_path = f'/content/MedDino/data/{params.dataset}/dataframe/'
+    base_path = f'/home/MediDino/data{params.dataset}/'
+    csv_path = f'/home/MediDino/data{params.dataset}/dataframe/'
 
     train_transforms, val_transforms = get_transforms()
 
     for i in range(1, 6):
-        with mlflow.start_run(run_name=f'{params.dataset}{i}'):
+        wandb.init(project="your_project_name", name=f'{params.dataset}{i}', config=vars(params))
 
-            mlflow.log_params(vars(params))
+        train_dataset = CustomDataset(base_path=base_path,
+                                      csv_path=os.path.join(csv_path, f'{params.dataset}_train_fold{i}.csv'),
+                                      transform=train_transforms,
+                                      label_map={params.neg_label: 0, params.pos_label: 1})
 
-            train_dataset = CustomDataset(base_path=base_path,
-                                          csv_path=os.path.join(csv_path, f'{params.dataset}_train_fold{i}.csv'),
-                                          transform=train_transforms,
-                                          label_map={params.neg_label: 0, params.pos_label: 1})
+        val_dataset = CustomDataset(base_path=base_path,
+                                    csv_path=os.path.join(csv_path, f'{params.dataset}_val_fold{i}.csv'),
+                                    transform=val_transforms,
+                                    label_map={params.neg_label: 0, params.pos_label: 1})
 
-            val_dataset = CustomDataset(base_path=base_path,
-                                        csv_path=os.path.join(csv_path, f'{params.dataset}_val_fold{i}.csv'),
-                                        transform=val_transforms,
-                                        label_map={params.neg_label: 0, params.pos_label: 1})
+        test_dataset = CustomDataset(base_path=base_path,
+                                     csv_path=os.path.join(csv_path, f'{params.dataset}_test_fold{i}.csv'),
+                                     transform=val_transforms,
+                                     label_map={params.neg_label: 0, params.pos_label: 1})
 
-            test_dataset = CustomDataset(base_path=base_path,
-                                         csv_path=os.path.join(csv_path, f'{params.dataset}_test_fold{i}.csv'),
-                                         transform=val_transforms,
-                                         label_map={params.neg_label: 0, params.pos_label: 1})
+        model = DinoVisionTransformerClassifier(hub_path=params.dino_version)
+        model.train()
+        trainer = Trainer(model=model,
+                          device=params.device,
+                          train_dataset=train_dataset,
+                          val_dataset=val_dataset,
+                          learning_rate=params.lr,
+                          batch_size=params.batch_size)
 
-            model = DinoVisionTransformerClassifier(hub_path=params.dino_version)
-            model.train()
-            trainer = Trainer(model=model,
-                              device=params.device,
-                              train_dataset=train_dataset,
-                              val_dataset=val_dataset,
-                              learning_rate=params.lr,
-                              batch_size=params.batch_size)
+        trainer.train(params.epochs)
 
-            trainer.train(params.epochs)
+        # auc score for fold
+        preds = []
+        y_true = []
 
-            # auc score for fold
-            preds = []
-            y_true = []
+        with torch.no_grad():
+            model.eval()
+            for img, label in test_dataset:
+                img = img.unsqueeze(0).cuda()
+                logit = model(img)
+                pred = torch.nn.functional.sigmoid(logit)
+                preds.append(pred.item())
 
-            with torch.no_grad():
-                model.eval()
-                for img, label in test_dataset:
-                    img = img.unsqueeze(0).cuda()
-                    logit = model(img)
-                    pred = torch.nn.functional.sigmoid(logit)
-                    preds.append(pred.item())
+                y_true.append(label)
 
-                    y_true.append(label)
+        fpr, tpr, thresholds = metrics.roc_curve(y_true, preds, pos_label=1)
+        auc = metrics.auc(fpr, tpr)
+        wandb.log({"auc": auc})
 
-            fpr, tpr, thresholds = metrics.roc_curve(y_true, preds, pos_label=1)
-            auc = metrics.auc(fpr, tpr)
-            mlflow.log_metric("auc", auc)
+        wandb.finish()

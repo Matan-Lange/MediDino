@@ -10,3 +10,4 @@ submitit
 --extra-index-url https://pypi.nvidia.com
 cuml-cu11
 wandb
+scikit-learn
