@@ -1,7 +1,11 @@
 # MedDino 
 
 ## Description
-A brief description of what your project does.
+In this study, we explored the potential of adapting DinoV2, a self-supervised vision transformer, to medical imaging tasks.
+By pre-training DinoV2 on domain- specific medical datasets and comparing its performance to RadImageNet, a
+CNN-based medical imaging model, we demonstrated that self-supervised pre-trained transformers models have the po-
+tential to serve as competitive foundation models in the healthcare domain. While DinoV2 initially lagged behind RadImageNet in some tasks, particularly in Thy-
+roid imaging, the model showed stronger performance after domain-specific pre-training, narrowing the performance gapin datasets such as ACL and Meniscus MRI.
 
 ## Getting Started
 To get started with this project, follow these steps:
