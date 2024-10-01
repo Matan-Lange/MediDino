@@ -3,9 +3,9 @@
 ## Description
 In this study, we explored the potential of adapting DinoV2, a self-supervised vision transformer, to medical imaging tasks.
 By pre-training DinoV2 on domain- specific medical datasets and comparing its performance to RadImageNet, a
-CNN-based medical imaging model, we demonstrated that self-supervised pre-trained transformers models have the po-
-tential to serve as competitive foundation models in the healthcare domain. While DinoV2 initially lagged behind RadImageNet in some tasks, particularly in Thy-
-roid imaging, the model showed stronger performance after domain-specific pre-training, narrowing the performance gapin datasets such as ACL and Meniscus MRI.
+CNN-based medical imaging model, we demonstrated that self-supervised pre-trained transformers models have the potential 
+to serve as competitive foundation models in the healthcare domain. While DinoV2 initially lagged behind RadImageNet in some tasks, particularly in Thyroid imaging, 
+the model showed stronger performance after domain-specific pre-training, narrowing the performance gapin datasets such as ACL and Meniscus MRI.
 
 ![image](https://github.com/user-attachments/assets/e9a05dc6-6e8e-4ee6-8249-42f8b857503c)
 
